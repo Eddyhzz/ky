@@ -24,7 +24,7 @@ cp .env .env.local
 npm run dev
 ```
 
-本地 Vite 预览只负责前端页面；要让 `/api/generate` 在本地可用，请使用 Vercel CLI：
+本地 `npm run dev` 会通过 Vite 适配 `/api/generate`，直接支持完整体验。也可以使用 Vercel CLI 模拟线上环境：
 
 ```bash
 npx vercel dev

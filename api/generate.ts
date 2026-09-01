@@ -59,8 +59,10 @@ export default async function handler(req: any, res: any) {
       }),
     });
 
+    if (response.status === 401) return res.status(502).send('AI 服务认证失败，请检查 DEEPSEEK_API_KEY');
+    if (response.status === 429) return res.status(502).send('AI 服务额度或频率受限，请稍后重试');
     if (!response.ok) return res.status(502).send('AI 服务请求失败');
-    const data = await response.json();
+    const data = await response.json() as { choices?: Array<{ message?: { content?: unknown } }> };
     const content = data.choices?.[0]?.message?.content;
     const jsonMatch = typeof content === 'string' && content.match(/\[[\s\S]*\]/);
     if (!jsonMatch) return res.status(502).send('AI 返回格式无法解析');
