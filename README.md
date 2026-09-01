@@ -29,11 +29,3 @@ npm run dev
 ```bash
 npx vercel dev
 ```
-
-## 部署
-
-项目适合直接部署到 Vercel。部署平台中配置环境变量 `DEEPSEEK_API_KEY`，不要使用 `VITE_` 前缀，也不要把密钥写入代码或提交到 Git。
-
-## 技术栈
-
-React 19、TypeScript、Vite、DeepSeek Chat API、Vercel Serverless Function。
