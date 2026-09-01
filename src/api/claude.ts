@@ -1,5 +1,3 @@
-import Anthropic from '@anthropic-ai/sdk';
-
 export interface Beat {
   id: string;
   title: string;
@@ -9,13 +7,9 @@ export interface Beat {
 
 export async function generateStoryBeats(
   concept: string,
-  genre: string,
-  apiKey: string
+  genre: string
 ): Promise<Beat[]> {
-  const client = new Anthropic({
-    apiKey: apiKey,
-    dangerouslyAllowBrowser: true,
-  });
+  const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY;
 
   const prompt = `你是一位专业的故事结构顾问。请根据以下故事概念，生成一个完整的故事节拍结构。
 
@@ -36,29 +30,41 @@ export async function generateStoryBeats(
 
 只返回JSON数组，不要其他内容。`;
 
-  const message = await client.messages.create({
-    model: 'claude-3-5-sonnet-20241022',
-    max_tokens: 2000,
-    messages: [
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
+  const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'deepseek-chat',
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 2000,
+    }),
   });
 
-  const content = message.content[0];
-  if (content.type === 'text') {
-    const jsonMatch = content.text.match(/\[[\s\S]*\]/);
-    if (jsonMatch) {
-      const beats = JSON.parse(jsonMatch[0]);
-      return beats.map((beat: any, index: number) => ({
-        id: String(index + 1),
-        title: beat.title,
-        description: beat.description,
-        timing: beat.timing,
-      }));
-    }
+  if (!response.ok) {
+    throw new Error('API 请求失败');
+  }
+
+  const data = await response.json();
+  const content = data.choices[0].message.content;
+
+  const jsonMatch = content.match(/\[[\s\S]*\]/);
+  if (jsonMatch) {
+    const beats = JSON.parse(jsonMatch[0]);
+    return beats.map((beat: any, index: number) => ({
+      id: String(index + 1),
+      title: beat.title,
+      description: beat.description,
+      timing: beat.timing,
+    }));
   }
 
   throw new Error('Failed to parse response');

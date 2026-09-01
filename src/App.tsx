@@ -7,22 +7,19 @@ function App() {
   const [genre, setGenre] = useState('drama')
   const [beats, setBeats] = useState<Beat[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
-  const [apiKey, setApiKey] = useState('')
   const [error, setError] = useState('')
-  const [showApiKeyInput, setShowApiKeyInput] = useState(true)
 
   const generateBeats = async () => {
-    if (!concept.trim() || !apiKey.trim()) return
+    if (!concept.trim()) return
 
     setIsGenerating(true)
     setError('')
 
     try {
-      const generatedBeats = await generateStoryBeats(concept, genre, apiKey)
+      const generatedBeats = await generateStoryBeats(concept, genre)
       setBeats(generatedBeats)
-      setShowApiKeyInput(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : '生成失败，请检查 API Key 或稍后重试')
+      setError(err instanceof Error ? err.message : '生成失败，请稍后重试')
       console.error('Generation error:', err)
     } finally {
       setIsGenerating(false)
@@ -44,25 +41,6 @@ function App() {
 
         {/* Input Section */}
         <div className="bg-surface-3 rounded-2xl p-8 mb-8 border border-surface-4">
-          {showApiKeyInput && (
-            <div className="mb-6">
-              <label htmlFor="apiKey" className="block text-sm font-medium text-gray-300 mb-3">
-                Anthropic API Key
-              </label>
-              <input
-                type="password"
-                id="apiKey"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="sk-ant-..."
-                className="w-full bg-surface-2 border border-surface-4 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-primary"
-              />
-              <p className="text-xs text-gray-500 mt-2">
-                API Key 仅在浏览器本地使用，不会被存储或上传
-              </p>
-            </div>
-          )}
-
           <div className="mb-6">
             <label htmlFor="concept" className="block text-sm font-medium text-gray-300 mb-3">
               故事概念
@@ -103,7 +81,7 @@ function App() {
 
           <button
             onClick={generateBeats}
-            disabled={!concept.trim() || !apiKey.trim() || isGenerating}
+            disabled={!concept.trim() || isGenerating}
             className="w-full bg-accent-primary text-white font-medium py-4 rounded-pill hover:bg-opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isGenerating ? '生成中...' : '生成故事节拍'}
@@ -120,7 +98,6 @@ function App() {
               <button
                 onClick={() => {
                   setBeats([])
-                  setShowApiKeyInput(true)
                 }}
                 className="text-sm text-accent-primary hover:text-opacity-80 transition-colors"
               >
