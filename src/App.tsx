@@ -29,6 +29,14 @@ function ArrowIcon() {
   )
 }
 
+function EditIcon({ done = false }: { done?: boolean }) {
+  return done ? (
+    <svg aria-hidden="true" viewBox="0 0 20 20" className="button-icon"><path d="m4 10 4 4 8-8" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+  ) : (
+    <svg aria-hidden="true" viewBox="0 0 20 20" className="button-icon"><path d="m4 14-.5 2.5L6 16l9.5-9.5a1.8 1.8 0 0 0-2.5-2.5L3.5 13.5M11.5 5.5l3 3" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+  )
+}
+
 function App() {
   const [concept, setConcept] = useState('')
   const [genre, setGenre] = useState('drama')
@@ -36,6 +44,7 @@ function App() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState('')
   const [activeRefinement, setActiveRefinement] = useState('')
+  const [editingBeatId, setEditingBeatId] = useState('')
 
   const generateBeats = async () => {
     if (!concept.trim()) return
@@ -65,6 +74,20 @@ function App() {
       setIsGenerating(false)
       setActiveRefinement('')
     }
+  }
+
+  const updateBeat = (id: string, field: 'title' | 'description', value: string) => {
+    setBeats((current) => current.map((beat) => beat.id === id ? { ...beat, [field]: value } : beat))
+  }
+
+  const exportMarkdown = () => {
+    const markdown = `# Story Beats 故事结构\n\n故事概念：${concept}\n故事类型：${genres.find((item) => item.value === genre)?.label ?? genre}\n\n${beats.map((beat, index) => `## ${index + 1}. ${beat.title}\n\n${beat.description}\n\n时间：${beat.timing}`).join('\n\n')}`
+    const url = URL.createObjectURL(new Blob([markdown], { type: 'text/markdown;charset=utf-8' }))
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'story-beats.md'
+    link.click()
+    URL.revokeObjectURL(url)
   }
 
   return (
@@ -138,7 +161,12 @@ function App() {
               <p className="section-kicker">02 / 故事骨架</p>
               <h2>{beats.length ? '你的故事节拍' : '等待一颗故事种子'}</h2>
             </div>
-            {beats.length > 0 && <button className="reset-button" onClick={() => setBeats([])} title="清空当前结果">重新开始</button>}
+            {beats.length > 0 && (
+              <div className="result-actions">
+                <button className="export-button" onClick={exportMarkdown} title="下载 Markdown 文件">下载 Markdown</button>
+                <button className="reset-button" onClick={() => setBeats([])} title="清空当前结果">重新开始</button>
+              </div>
+            )}
           </div>
 
           {beats.length > 0 && !isGenerating && (
@@ -170,10 +198,20 @@ function App() {
                   <div className="beat-index">{String(index + 1).padStart(2, '0')}</div>
                   <div className="beat-content">
                     <div className="beat-title-row">
-                      <h3>{beat.title}</h3>
-                      <span>{beat.timing}</span>
+                      {editingBeatId === beat.id ? (
+                        <input className="beat-title-input" value={beat.title} onChange={(event) => updateBeat(beat.id, 'title', event.target.value)} aria-label={`${beat.title} 标题`} />
+                      ) : <h3>{beat.title}</h3>}
+                      <div className="beat-meta">
+                        <span>{beat.timing}</span>
+                        <button className="edit-button" onClick={() => setEditingBeatId(editingBeatId === beat.id ? '' : beat.id)} title={editingBeatId === beat.id ? '保存节拍' : '编辑节拍'}>
+                          <EditIcon done={editingBeatId === beat.id} />
+                          <span>{editingBeatId === beat.id ? '保存' : '编辑'}</span>
+                        </button>
+                      </div>
                     </div>
-                    <p>{beat.description}</p>
+                    {editingBeatId === beat.id ? (
+                      <textarea className="beat-description-input" value={beat.description} onChange={(event) => updateBeat(beat.id, 'description', event.target.value)} aria-label={`${beat.title} 描述`} />
+                    ) : <p>{beat.description}</p>}
                   </div>
                 </article>
               ))}
