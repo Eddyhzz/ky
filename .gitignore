@@ -27,3 +27,13 @@ dist-ssr
 .env
 .env.local
 .env.production
+
+# Local submission notes
+CHECKLIST.md
+DEPLOYMENT_GUIDE.md
+PRODUCT_SPEC.md
+PROJECT_SUMMARY.md
+SUBMISSION.md
+TEST_GUIDE.md
+USAGE_EXAMPLES.md
+VIDEO_SCRIPT.md
