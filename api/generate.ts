@@ -23,7 +23,7 @@ function promptFor(body: RequestBody) {
 当前节拍：
 ${JSON.stringify(body.beats)}
 
-请只返回JSON数组。保持15个节拍、原有字段和时间占比格式，每个描述具体到场景和人物行动。`;
+请只返回JSON数组。保持15个节拍、原有字段和时间占比格式，每个描述具体到场景和人物行动，并控制在40-70字。`;
   }
 
   return `你是一位专业的故事结构顾问。请根据以下故事概念，生成一个完整的故事节拍结构。
@@ -31,7 +31,7 @@ ${JSON.stringify(body.beats)}
 故事概念：${body.concept}
 类型：${body.genre}
 
-请使用“救猫咪”(Save the Cat)结构模型，生成15个关键故事节拍。每个节拍包含标题、具体场景描述和时间占比。
+请使用“救猫咪”(Save the Cat)结构模型，生成15个关键故事节拍。每个节拍包含标题、40-70字的具体场景描述和时间占比。
 请只返回JSON数组，每个节拍格式如下：
 {"title":"开场 Opening Image","description":"具体场景描述","timing":"0-1%"}`;
 }
@@ -88,7 +88,7 @@ export default async function handler(req: any, res: any) {
         model: 'deepseek-chat',
         messages: [{ role: 'user', content: promptFor(body) }],
         temperature: 0.7,
-        max_tokens: 2000,
+        max_tokens: 5000,
       }),
     });
 
