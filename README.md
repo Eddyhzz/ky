@@ -8,7 +8,7 @@
 
 **核心问题**：很多创作者有好的故事点子，但不知道如何组织成完整的叙事结构
 
-**解决方案**：使用 Claude AI 根据用户输入的故事概念，自动生成基于"救猫咪"(Save the Cat) 结构模型的完整故事节拍
+**解决方案**：使用 DeepSeek AI 根据用户输入的故事概念，自动生成基于"救猫咪"(Save the Cat) 结构模型的完整故事节拍
 
 ## 功能特性
 
@@ -16,13 +16,13 @@
 - 🤖 AI 生成完整的 15 个故事节拍
 - 📊 基于"救猫咪"叙事结构模型
 - 🎨 清晰的可视化呈现
-- 🔒 API Key 本地使用，不会上传
+- 🔒 环境变量配置，安全可靠
 
 ## 技术栈
 
 - **前端**：React 19 + TypeScript + Vite
 - **样式**：Tailwind CSS 4
-- **AI**：Claude 3.5 Sonnet (Anthropic API)
+- **AI**：DeepSeek Chat API
 - **部署**：Vercel
 
 ## 本地运行
@@ -30,6 +30,9 @@
 ```bash
 # 安装依赖
 npm install
+
+# 创建 .env 文件并配置 API Key
+# VITE_DEEPSEEK_API_KEY=your_api_key_here
 
 # 启动开发服务器
 npm run dev
@@ -40,17 +43,16 @@ npm run build
 
 ## 使用说明
 
-1. 在页面中输入你的 Anthropic API Key
-2. 输入故事概念描述
-3. 选择故事类型（剧情、动作、喜剧等）
-4. 点击"生成故事节拍"
-5. 查看 AI 生成的完整故事结构节拍
+1. 输入故事概念描述
+2. 选择故事类型（剧情、动作、喜剧等）
+3. 点击"生成故事节拍"
+4. 查看 AI 生成的完整故事结构节拍
 
 ## 产品完成度
 
 ### ✅ 已完成
 - 完整的用户界面设计和实现
-- Claude API 集成
+- DeepSeek API 集成
 - 故事节拍生成功能
 - 类型选择
 - 错误处理
