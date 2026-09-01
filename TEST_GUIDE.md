@@ -3,8 +3,8 @@
 ## 当前配置
 
 - **AI 模型**：DeepSeek Chat
-- **API Key**：已在 `.env` 文件中配置
-- **配置方式**：环境变量（VITE_DEEPSEEK_API_KEY）
+- **API Key**：由服务端环境变量提供
+- **配置方式**：`DEEPSEEK_API_KEY`，不使用 `VITE_` 前缀
 
 ## 测试步骤
 
@@ -82,7 +82,7 @@ npm run preview
 
 ## 已知配置
 
-- API Key 通过环境变量 `VITE_DEEPSEEK_API_KEY` 配置
+- API Key 通过服务端环境变量 `DEEPSEEK_API_KEY` 配置
 - DeepSeek API 端点：https://api.deepseek.com/v1/chat/completions
 - 模型：deepseek-chat
 - Temperature: 0.7

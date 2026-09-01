@@ -1,6 +1,33 @@
 import { useState } from 'react'
-import { generateStoryBeats } from './api/claude'
+import { generateStoryBeats, refineStoryBeats } from './api/claude'
 import type { Beat } from './api/claude'
+
+const genres = [
+  { value: 'drama', label: '剧情' },
+  { value: 'action', label: '动作' },
+  { value: 'comedy', label: '喜剧' },
+  { value: 'thriller', label: '惊悚' },
+  { value: 'romance', label: '爱情' },
+  { value: 'scifi', label: '科幻' },
+]
+
+const refineActions = [
+  { label: '加强冲突', prompt: '加强每个阶段的外部阻力和关键对抗，让主角的选择更有代价。' },
+  { label: '加快节奏', prompt: '压缩铺垫，提前引爆事件，让每个节拍都推动剧情向前。' },
+  { label: '深化人物', prompt: '强化主角的欲望、恐惧和内在变化，让人物弧光更清晰。' },
+]
+
+function SparkIcon() {
+  return <span className="spark-icon" aria-hidden="true">✦</span>
+}
+
+function ArrowIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 20 20" className="button-icon">
+      <path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
 
 function App() {
   const [concept, setConcept] = useState('')
@@ -8,181 +35,155 @@ function App() {
   const [beats, setBeats] = useState<Beat[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState('')
+  const [activeRefinement, setActiveRefinement] = useState('')
 
   const generateBeats = async () => {
     if (!concept.trim()) return
-
     setIsGenerating(true)
     setError('')
 
     try {
-      const generatedBeats = await generateStoryBeats(concept, genre)
-      setBeats(generatedBeats)
+      setBeats(await generateStoryBeats(concept, genre))
     } catch (err) {
       setError(err instanceof Error ? err.message : '生成失败，请稍后重试')
-      console.error('Generation error:', err)
     } finally {
       setIsGenerating(false)
     }
   }
 
+  const refineBeats = async (label: string, direction: string) => {
+    if (!beats.length) return
+    setIsGenerating(true)
+    setActiveRefinement(label)
+    setError('')
+
+    try {
+      setBeats(await refineStoryBeats(concept, genre, beats, direction))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '修改失败，请稍后重试')
+    } finally {
+      setIsGenerating(false)
+      setActiveRefinement('')
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-surface-1">
-      {/* Subtle gradient overlay */}
-      <div className="fixed inset-0 bg-gradient-to-br from-accent-primary/5 via-transparent to-transparent pointer-events-none" />
+    <main className="app-shell">
+      <header className="topbar">
+        <div className="brand-lockup">
+          <div className="brand-mark"><SparkIcon /></div>
+          <div>
+            <p className="brand-name">STORY BEATS</p>
+            <p className="brand-caption">故事创作工作台</p>
+          </div>
+        </div>
+        <div className="topbar-meta"><span className="status-dot" /> AI 结构顾问</div>
+      </header>
 
-      <div className="relative max-w-5xl mx-auto px-6 py-16">
-        {/* Header with enhanced typography */}
-        <header className="text-center mb-20">
-          <div className="inline-block mb-6">
-            <div className="w-14 h-14 bg-accent-primary/20 rounded-2xl flex items-center justify-center mb-6 mx-auto backdrop-blur-sm">
-              <svg className="w-7 h-7 text-accent-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
+      <section className="workspace-heading">
+        <div>
+          <p className="eyebrow">从灵感到结构</p>
+          <h1>让故事先站稳，<em>再开始写。</em></h1>
+          <p className="heading-copy">把一句模糊的故事想法，推进成一份可以继续创作的叙事骨架。</p>
+        </div>
+        <div className="model-note"><span>15</span><small>个关键节拍<br />Save the Cat</small></div>
+      </section>
+
+      <section className="workbench">
+        <aside className="input-panel">
+          <div className="panel-header">
+            <div>
+              <p className="section-kicker">01 / 故事种子</p>
+              <h2>先告诉我，你想讲什么？</h2>
             </div>
-          </div>
-          <h1 className="text-6xl font-bold text-white mb-5 tracking-tight leading-tight">
-            故事节拍规划器
-          </h1>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            用 AI 将创意转化为专业的叙事结构
-          </p>
-        </header>
-
-        {/* Input Section with glass morphism */}
-        <div className="bg-surface-3/80 backdrop-blur-xl rounded-3xl p-10 mb-10 border border-surface-4/50 shadow-2xl shadow-black/20">
-          <div className="mb-8">
-            <label htmlFor="concept" className="block text-sm font-semibold text-gray-300 mb-3 tracking-wide">
-              故事概念
-            </label>
-            <textarea
-              id="concept"
-              value={concept}
-              onChange={(e) => setConcept(e.target.value)}
-              placeholder="描述你的故事核心想法。例如：一个退休杀手为了救被绑架的狗，不得不重操旧业，对抗整个地下犯罪网络..."
-              className="w-full h-40 bg-surface-2/80 backdrop-blur-sm border border-surface-4/50 rounded-2xl px-5 py-4 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-primary/50 focus:border-accent-primary/50 resize-none transition-all duration-200 leading-relaxed"
-            />
+            <span className="panel-count">{concept.length}/500</span>
           </div>
 
-          <div className="mb-8">
-            <label htmlFor="genre" className="block text-sm font-semibold text-gray-300 mb-3 tracking-wide">
-              故事类型
-            </label>
-            <select
-              id="genre"
-              value={genre}
-              onChange={(e) => setGenre(e.target.value)}
-              className="w-full bg-surface-2/80 backdrop-blur-sm border border-surface-4/50 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-accent-primary/50 focus:border-accent-primary/50 transition-all duration-200 cursor-pointer"
-            >
-              <option value="drama">剧情 Drama</option>
-              <option value="action">动作 Action</option>
-              <option value="comedy">喜剧 Comedy</option>
-              <option value="thriller">惊悚 Thriller</option>
-              <option value="romance">爱情 Romance</option>
-              <option value="scifi">科幻 Sci-Fi</option>
-            </select>
+          <label htmlFor="concept">故事概念</label>
+          <textarea
+            id="concept"
+            value={concept}
+            maxLength={500}
+            onChange={(event) => setConcept(event.target.value)}
+            placeholder="例如：一个退休特工发现女儿被绑架，只能重返地下世界，却发现绑架案和自己过去的一次任务有关。"
+          />
+          <p className="field-hint">写下人物、欲望和阻碍，不需要完整。</p>
+
+          <label className="genre-label">故事气质</label>
+          <div className="genre-grid" role="group" aria-label="故事类型">
+            {genres.map((item) => (
+              <button
+                type="button"
+                key={item.value}
+                className={`genre-chip ${genre === item.value ? 'selected' : ''}`}
+                onClick={() => setGenre(item.value)}
+              >
+                {item.label}
+              </button>
+            ))}
           </div>
 
-          {error && (
-            <div className="mb-8 bg-red-900/30 backdrop-blur-sm border border-red-800/50 rounded-2xl px-5 py-4 text-red-300 text-sm leading-relaxed">
-              {error}
+          {error && <div className="error-message" role="alert">{error}</div>}
+
+          <button className="generate-button" onClick={generateBeats} disabled={!concept.trim() || isGenerating}>
+            <span>{isGenerating ? '正在整理故事结构…' : '生成故事节拍'}</span>
+            {isGenerating ? <span className="loading-dot" aria-hidden="true" /> : <ArrowIcon />}
+          </button>
+          <p className="privacy-note">你的故事只用于本次生成，不会保存到这里。</p>
+        </aside>
+
+        <section className="results-panel" aria-live="polite">
+          <div className="results-header">
+            <div>
+              <p className="section-kicker">02 / 故事骨架</p>
+              <h2>{beats.length ? '你的故事节拍' : '等待一颗故事种子'}</h2>
+            </div>
+            {beats.length > 0 && <button className="reset-button" onClick={() => setBeats([])} title="清空当前结果">重新开始</button>}
+          </div>
+
+          {beats.length > 0 && !isGenerating && (
+            <div className="refine-strip">
+              <span>继续调整</span>
+              {refineActions.map((action) => (
+                <button key={action.label} type="button" onClick={() => refineBeats(action.label, action.prompt)}>
+                  {action.label}<ArrowIcon />
+                </button>
+              ))}
             </div>
           )}
 
-          <button
-            onClick={generateBeats}
-            disabled={!concept.trim() || isGenerating}
-            className="group relative w-full bg-gradient-to-r from-accent-primary to-accent-primary/90 text-white font-semibold py-5 rounded-pill hover:shadow-lg hover:shadow-accent-primary/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none overflow-hidden"
-          >
-            <span className="relative z-10 flex items-center justify-center gap-2">
-              {isGenerating ? (
-                <>
-                  <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  生成中...
-                </>
-              ) : (
-                <>
-                  生成故事节拍
-                  <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </>
-              )}
-            </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-          </button>
-        </div>
+          {isGenerating && <div className="loading-state"><div className="loading-line" /><p>{activeRefinement ? `正在${activeRefinement}…` : '正在寻找故事里的转折点…'}</p></div>}
 
-        {/* Beats Display with enhanced cards */}
-        {beats.length > 0 && (
-          <div className="space-y-5">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="text-3xl font-bold text-white mb-2">
-                  故事结构节拍
-                </h2>
-                <p className="text-sm text-gray-400">基于 Save the Cat 叙事模型</p>
-              </div>
-              <button
-                onClick={() => {
-                  setBeats([])
-                }}
-                className="px-5 py-2.5 text-sm text-accent-primary bg-accent-primary/10 hover:bg-accent-primary/20 rounded-pill transition-all duration-200 font-medium"
-              >
-                重新生成
-              </button>
+          {!isGenerating && beats.length === 0 && (
+            <div className="empty-state">
+              <div className="empty-number">15</div>
+              <h3>一个好故事，先从结构开始。</h3>
+              <p>输入左侧的故事概念后，AI 会帮你梳理开场、冲突、转折与结局。</p>
+              <div className="empty-steps"><span>灵感</span><i>→</i><span>冲突</span><i>→</i><span>节拍</span></div>
             </div>
-            <div className="grid gap-5">
+          )}
+
+          {!isGenerating && beats.length > 0 && (
+            <div className="beat-list">
               {beats.map((beat, index) => (
-                <div
-                  key={beat.id}
-                  className="group bg-surface-3/80 backdrop-blur-xl border border-surface-4/50 rounded-2xl p-7 hover:border-accent-primary/50 hover:shadow-lg hover:shadow-accent-primary/10 transition-all duration-300"
-                >
-                  <div className="flex items-start gap-5">
-                    <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-accent-primary/30 to-accent-primary/10 rounded-2xl flex items-center justify-center text-accent-primary font-bold text-lg group-hover:scale-110 transition-transform duration-300">
-                      {index + 1}
+                <article className="beat-row" key={beat.id}>
+                  <div className="beat-index">{String(index + 1).padStart(2, '0')}</div>
+                  <div className="beat-content">
+                    <div className="beat-title-row">
+                      <h3>{beat.title}</h3>
+                      <span>{beat.timing}</span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-4 mb-3">
-                        <h3 className="text-xl font-semibold text-white leading-tight">
-                          {beat.title}
-                        </h3>
-                        <span className="flex-shrink-0 text-sm text-accent-primary font-semibold bg-accent-primary/10 px-3 py-1 rounded-full">
-                          {beat.timing}
-                        </span>
-                      </div>
-                      <p className="text-gray-300 leading-relaxed text-base">
-                        {beat.description}
-                      </p>
-                    </div>
+                    <p>{beat.description}</p>
                   </div>
-                </div>
+                </article>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </section>
+      </section>
 
-        {/* Enhanced Empty State */}
-        {beats.length === 0 && !isGenerating && (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 bg-surface-3/50 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-6">
-              <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-            </div>
-            <p className="text-xl text-gray-400 font-medium">输入故事概念，开始创作之旅</p>
-          </div>
-        )}
-
-        {/* Footer */}
-        <footer className="mt-20 pt-8 border-t border-surface-4/30 text-center text-sm text-gray-500">
-          <p>基于 DeepSeek AI 驱动 · 遵循 Save the Cat 叙事模型</p>
-        </footer>
-      </div>
-    </div>
+      <footer className="footer"><span>STORY BEATS</span><span>结构清晰，创作自由。</span></footer>
+    </main>
   )
 }
 

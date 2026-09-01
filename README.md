@@ -1,74 +1,39 @@
-# 故事节拍规划器 Story Beat Planner
+# Story Beats
 
-一个基于 AI 的故事结构规划工具，帮助创作者将故事概念转化为清晰的叙事节拍。
+面向短剧创作者的 AI 故事结构工作台：把一句故事灵感推进成 15 个可继续创作的叙事节拍。
 
-## 产品定位
+## 核心路径
 
-**目标用户**：网文作者、短视频编剧、想要创作故事但缺乏结构经验的业余创作者
+1. 输入人物、欲望和阻碍
+2. 选择故事气质
+3. 生成 Save the Cat 结构节拍
+4. 选择“加强冲突”“加快节奏”或“深化人物”继续调整
 
-**核心问题**：很多创作者有好的故事点子，但不知道如何组织成完整的叙事结构
+## 当前完成边界
 
-**解决方案**：使用 DeepSeek AI 根据用户输入的故事概念，自动生成基于"救猫咪"(Save the Cat) 结构模型的完整故事节拍
+已完成真实 DeepSeek API 生成、15 个故事节拍、加载状态、错误处理、响应式 UI 和 AI 二次调整。
 
-## 功能特性
-
-- 🎯 输入故事概念和类型
-- 🤖 AI 生成完整的 15 个故事节拍
-- 📊 基于"救猫咪"叙事结构模型
-- 🎨 清晰的可视化呈现
-- 🔒 环境变量配置，安全可靠
-
-## 技术栈
-
-- **前端**：React 19 + TypeScript + Vite
-- **样式**：Tailwind CSS 4
-- **AI**：DeepSeek Chat API
-- **部署**：Vercel
+尚未完成单节拍编辑、历史记录和 Markdown/PDF 导出。继续开发时，第一优先级是单节拍编辑，让创作者更直接地接管 AI 输出。
 
 ## 本地运行
 
 ```bash
-# 安装依赖
 npm install
-
-# 创建 .env 文件并配置 API Key
-# VITE_DEEPSEEK_API_KEY=your_api_key_here
-
-# 启动开发服务器
+cp .env .env.local
+# 在 .env.local 中填写服务端密钥：DEEPSEEK_API_KEY=your_key
 npm run dev
-
-# 构建生产版本
-npm run build
 ```
 
-## 使用说明
+本地 Vite 预览只负责前端页面；要让 `/api/generate` 在本地可用，请使用 Vercel CLI：
 
-1. 输入故事概念描述
-2. 选择故事类型（剧情、动作、喜剧等）
-3. 点击"生成故事节拍"
-4. 查看 AI 生成的完整故事结构节拍
+```bash
+npx vercel dev
+```
 
-## 产品完成度
+## 部署
 
-### ✅ 已完成
-- 完整的用户界面设计和实现
-- DeepSeek API 集成
-- 故事节拍生成功能
-- 类型选择
-- 错误处理
-- 响应式设计
-- 深色主题设计系统
+项目适合直接部署到 Vercel。部署平台中配置环境变量 `DEEPSEEK_API_KEY`，不要使用 `VITE_` 前缀，也不要把密钥写入代码或提交到 Git。
 
-### 🚧 未完成（下一步优先级）
-- 导出功能（PDF/Markdown）
-- 节拍编辑能力
-- 历史记录保存
-- 多语言支持
+## 技术栈
 
-## 设计说明
-
-产品采用深色调色盘，使用层次化的表面色（surface-1 到 surface-5）和高饱和度的青色强调色（#38BDF8），营造专注的创作氛围。
-
-## License
-
-MIT
+React 19、TypeScript、Vite、DeepSeek Chat API、Vercel Serverless Function。

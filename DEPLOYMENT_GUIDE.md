@@ -35,15 +35,15 @@ vercel
 1. 将代码推送到 GitHub 仓库：
 ```bash
 git remote add origin <your-github-repo-url>
-git push -u origin master
+git push -u origin main
 ```
 
 2. 在 Vercel Dashboard 导入该 GitHub 仓库
-3. 每次推送代码到 master 分支会自动触发部署
+3. 每次推送代码到 main 分支会自动触发部署
 
 ## 环境变量
 
-本项目不需要配置环境变量。用户需要在使用时输入自己的 Anthropic API Key。
+部署时需要在 Vercel 项目中配置服务端环境变量 `DEEPSEEK_API_KEY`。用户不需要输入 API Key。
 
 ## 构建验证
 
@@ -71,7 +71,7 @@ npm run preview
 - 检查 TypeScript 类型错误：`npm run build`
 
 ### 运行时错误
-- 确认用户输入了有效的 Anthropic API Key
+- 确认 Vercel 中配置了有效的 `DEEPSEEK_API_KEY`
 - 检查浏览器控制台的错误信息
 - 确认 API Key 有足够的配额
 
@@ -83,7 +83,7 @@ npm run preview
 
 ## 安全注意事项
 
-- ✅ API Key 仅在浏览器本地使用
-- ✅ 不会上传或存储用户的 API Key
+- ✅ API Key 仅在 Vercel Serverless Function 中使用
+- ✅ API Key 不会进入前端构建产物
 - ✅ 使用 HTTPS 加密传输
 - ⚠️ 提醒用户不要在公共设备上使用
