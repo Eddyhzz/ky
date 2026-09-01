@@ -36,6 +36,39 @@ ${JSON.stringify(body.beats)}
 {"title":"开场 Opening Image","description":"具体场景描述","timing":"0-1%"}`;
 }
 
+function parseBeats(content: unknown): Beat[] | null {
+  if (typeof content !== 'string') return null;
+
+  const cleaned = content.replace(/```(?:json)?/gi, '').trim();
+  const candidates = [cleaned];
+  const start = cleaned.indexOf('[');
+  const end = cleaned.lastIndexOf(']');
+  if (start >= 0 && end > start) candidates.push(cleaned.slice(start, end + 1));
+
+  for (const candidate of candidates) {
+    try {
+      const parsed = JSON.parse(candidate) as unknown;
+      const beats = Array.isArray(parsed)
+        ? parsed
+        : parsed && typeof parsed === 'object' && 'beats' in parsed && Array.isArray(parsed.beats)
+          ? parsed.beats
+          : null;
+      if (!beats) continue;
+
+      return beats.map((beat: any, index: number) => ({
+        id: String(index + 1),
+        title: String(beat.title ?? `节拍 ${index + 1}`),
+        description: String(beat.description ?? ''),
+        timing: String(beat.timing ?? ''),
+      }));
+    } catch {
+      // Try the next JSON shape or extracted array.
+    }
+  }
+
+  return null;
+}
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') return res.status(405).send('仅支持 POST 请求');
 
@@ -63,17 +96,9 @@ export default async function handler(req: any, res: any) {
     if (response.status === 429) return res.status(502).send('AI 服务额度或频率受限，请稍后重试');
     if (!response.ok) return res.status(502).send('AI 服务请求失败');
     const data = await response.json() as { choices?: Array<{ message?: { content?: unknown } }> };
-    const content = data.choices?.[0]?.message?.content;
-    const jsonMatch = typeof content === 'string' && content.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) return res.status(502).send('AI 返回格式无法解析');
-
-    const beats = JSON.parse(jsonMatch[0]);
-    return res.status(200).json(beats.map((beat: Beat, index: number) => ({
-      id: String(index + 1),
-      title: beat.title,
-      description: beat.description,
-      timing: beat.timing,
-    })));
+    const beats = parseBeats(data.choices?.[0]?.message?.content);
+    if (!beats?.length) return res.status(502).send('AI 返回格式无法解析');
+    return res.status(200).json(beats);
   } catch {
     return res.status(500).send('生成失败，请稍后重试');
   }
