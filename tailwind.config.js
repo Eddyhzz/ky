@@ -21,6 +21,17 @@ export default {
       },
       borderRadius: {
         pill: '999px',
+      },
+      backdropBlur: {
+        xs: '2px',
+      },
+      animation: {
+        'spin': 'spin 1s linear infinite',
+        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      },
+      boxShadow: {
+        'glow': '0 0 20px rgba(56, 189, 248, 0.15)',
+        'glow-lg': '0 0 40px rgba(56, 189, 248, 0.2)',
       }
     },
   },
